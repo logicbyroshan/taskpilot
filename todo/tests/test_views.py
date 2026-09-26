@@ -303,7 +303,9 @@ class ViewTests(TestCase):
             'username': 'newtester',
             'email': 'newtester@example.com',
             'password': 'safePassword999',
-            'confirm_password': 'safePassword999'
+            'confirm_password': 'safePassword999',
+            'dpdp_consent_essential': 'on',
+            'age_affirmation': 'on',
         })
         self.assertEqual(post_res.status_code, 302)
         self.assertRedirects(post_res, reverse('dashboard'))
