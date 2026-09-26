@@ -390,3 +390,205 @@ class TaskCommentDeleteView(APIView):
 
         comment.delete()
         return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================================
+#  DPDP PRIVACY & DATA GOVERNANCE REST API (v1)
+# ============================================================
+
+from django.conf import settings
+from ..privacy_services import (
+    ConsentService, DataPrincipalRightsService, GrievanceService,
+    NominationService
+)
+from ..serializers import (
+    ConsentRecordSerializer, DataPrincipalNominationSerializer,
+    PrivacyGrievanceSerializer
+)
+from ..models import ConsentRecord, DataPrincipalNomination, PrivacyGrievance
+
+
+class DPDPNoticeAPIView(APIView):
+    """
+    GET /api/v1/privacy/notice/
+    Returns structured, itemized DPDP Act 2023 & DPDP Rules 2025 Notice information.
+    """
+    permission_classes = []  # Public endpoint
+
+    def get(self, request):
+        cfg = getattr(settings, 'DPDP_CONFIG', {})
+        purposes = []
+        for p_key, p_val in ConsentService.PURPOSE_DEFINITIONS.items():
+            purposes.append({
+                'purpose_key': p_key,
+                'title': p_val['title'],
+                'description': p_val['description'],
+                'is_mandatory': p_val['is_mandatory'],
+            })
+
+        return Response({
+            'success': True,
+            'compliance': 'Digital Personal Data Protection Act, 2023 & DPDP Rules, 2025',
+            'data_fiduciary': {
+                'name': cfg.get('DATA_FIDUCIARY_NAME'),
+                'email': cfg.get('DATA_FIDUCIARY_EMAIL'),
+                'address': cfg.get('DATA_FIDUCIARY_ADDRESS'),
+            },
+            'grievance_redressal_officer': {
+                'name': cfg.get('GRIEVANCE_OFFICER_NAME'),
+                'email': cfg.get('GRIEVANCE_OFFICER_EMAIL'),
+                'phone': cfg.get('GRIEVANCE_OFFICER_PHONE'),
+                'address': cfg.get('GRIEVANCE_OFFICER_ADDRESS'),
+                'statutory_resolution_timeframe_days': cfg.get('STATUTORY_GRIEVANCE_DAYS', 90),
+            },
+            'notice_version': cfg.get('NOTICE_VERSION'),
+            'effective_date': cfg.get('NOTICE_EFFECTIVE_DATE'),
+            'specified_purposes': purposes,
+            'data_principal_rights': [
+                'Right to Access Summary of Personal Data (Section 11)',
+                'Right to Correction, Completion and Updating (Section 12)',
+                'Right to Erasure of Personal Data (Section 12(3))',
+                'Right to Grievance Redressal within 90 days (Section 13)',
+                'Right to Nominate Representative in event of death or incapacity (Section 14)',
+                'Right to Withdraw Consent with comparable ease (Section 6(4))',
+            ],
+            'board_escalation_url': cfg.get('BOARD_ESCALATION_URL'),
+        })
+
+
+class DPDPDossierAPIView(APIView):
+    """
+    GET /api/v1/privacy/dossier/
+    Returns full personal data dossier under DPDP Section 11 Right to Access.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        dossier = DataPrincipalRightsService.generate_personal_data_dossier(request.user, request=request)
+        return Response({'success': True, 'dossier': dossier})
+
+
+class DPDPConsentsAPIView(APIView):
+    """
+    GET  /api/v1/privacy/consents/ — list all purpose consents with status
+    POST /api/v1/privacy/consents/ — grant or withdraw consent
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        overview = ConsentService.get_user_consent_overview(request.user)
+        return Response({'success': True, 'consents': overview})
+
+    def post(self, request):
+        purpose = request.data.get('purpose')
+        status_val = request.data.get('status', 'granted').lower()
+
+        if not purpose:
+            return Response({'error': 'purpose is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if status_val in ('withdrawn', 'false', '0'):
+                record = ConsentService.withdraw_consent(request.user, purpose, request=request)
+            else:
+                record = ConsentService.record_consent(request.user, purpose, status=ConsentRecord.Status.GRANTED, request=request, channel='rest_api')
+            serializer = ConsentRecordSerializer(record)
+            return Response({'success': True, 'consent': serializer.data})
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DPDPNominationAPIView(APIView):
+    """
+    GET  /api/v1/privacy/nomination/ — retrieve current nominee
+    POST /api/v1/privacy/nomination/ — create/update nominee
+    DELETE /api/v1/privacy/nomination/ — revoke nominee
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        nominee = NominationService.get_nominee(request.user)
+        if not nominee:
+            return Response({'success': True, 'nominee': None})
+        serializer = DataPrincipalNominationSerializer(nominee)
+        return Response({'success': True, 'nominee': serializer.data})
+
+    def post(self, request):
+        try:
+            nominee = NominationService.set_nominee(
+                user=request.user,
+                nominee_name=request.data.get('nominee_name', ''),
+                nominee_email=request.data.get('nominee_email', ''),
+                relationship=request.data.get('relationship', ''),
+                nominee_phone=request.data.get('nominee_phone', ''),
+                notes=request.data.get('notes', ''),
+                request=request
+            )
+            serializer = DataPrincipalNominationSerializer(nominee)
+            return Response({'success': True, 'nominee': serializer.data}, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        NominationService.revoke_nominee(request.user, request=request)
+        return Response({'success': True, 'message': 'Nomination revoked.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class DPDPGrievanceAPIView(APIView):
+    """
+    GET  /api/v1/privacy/grievances/ — list user's submitted grievances
+    POST /api/v1/privacy/grievances/ — submit a new privacy grievance
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        grievances = PrivacyGrievance.objects.filter(user=request.user).order_by('-created_at')
+        serializer = PrivacyGrievanceSerializer(grievances, many=True)
+        return Response({'success': True, 'grievances': serializer.data})
+
+    def post(self, request):
+        try:
+            grievance = GrievanceService.create_grievance(
+                full_name=request.data.get('full_name', request.user.get_full_name() or request.user.username),
+                email=request.data.get('email', request.user.email),
+                category=request.data.get('category', PrivacyGrievance.Category.OTHER),
+                subject=request.data.get('subject', ''),
+                description=request.data.get('description', ''),
+                user=request.user,
+                request=request
+            )
+            serializer = PrivacyGrievanceSerializer(grievance)
+            return Response({'success': True, 'grievance': serializer.data}, status=status.HTTP_201_CREATED)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DPDPErasureAPIView(APIView):
+    """
+    POST /api/v1/privacy/erase/
+    Executes permanent account & personal data erasure under Section 12(3).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        confirm = request.data.get('confirm_erase', '').strip()
+        password = request.data.get('password', '').strip()
+
+        if confirm != 'ERASE MY DATA':
+            return Response(
+                {'error': 'Confirmation mismatch. You must provide confirm_erase="ERASE MY DATA".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not request.user.check_password(password):
+            return Response(
+                {'error': 'Invalid password. Account erasure aborted.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        user_to_erase = request.user
+        DataPrincipalRightsService.execute_account_erasure(user_to_erase, request=request)
+        return Response({
+            'success': True,
+            'message': 'Account and all associated personal data have been permanently erased under DPDP Act 2023 Section 12(3).'
+        }, status=status.HTTP_200_OK)
+

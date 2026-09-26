@@ -30,6 +30,12 @@ from .views import (
     PreDefinedTaskViewSet,
     UserProfileAPIView,
     TaskCommentDeleteView,
+    DPDPNoticeAPIView,
+    DPDPDossierAPIView,
+    DPDPConsentsAPIView,
+    DPDPNominationAPIView,
+    DPDPGrievanceAPIView,
+    DPDPErasureAPIView,
 )
 
 # DRF router — auto-generates standard CRUD routes for ViewSets
@@ -55,6 +61,15 @@ urlpatterns = [
     # Comment management
     path('comments/<int:pk>/', TaskCommentDeleteView.as_view(), name='api-comment-delete'),
 
+    # DPDP Act 2023 & DPDP Rules 2025 Privacy Endpoints
+    path('privacy/notice/', DPDPNoticeAPIView.as_view(), name='api-privacy-notice'),
+    path('privacy/dossier/', DPDPDossierAPIView.as_view(), name='api-privacy-dossier'),
+    path('privacy/consents/', DPDPConsentsAPIView.as_view(), name='api-privacy-consents'),
+    path('privacy/nomination/', DPDPNominationAPIView.as_view(), name='api-privacy-nomination'),
+    path('privacy/grievances/', DPDPGrievanceAPIView.as_view(), name='api-privacy-grievances'),
+    path('privacy/erase/', DPDPErasureAPIView.as_view(), name='api-privacy-erase'),
+
     # Router-generated routes (tasks, projects, templates)
     path('', include(router.urls)),
 ]
+

@@ -269,3 +269,47 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
+# ============================================================
+#  DPDP PRIVACY & DATA GOVERNANCE SERIALIZERS
+# ============================================================
+
+from .models import ConsentRecord, DataPrincipalNomination, PrivacyGrievance, DataBreachIncident
+
+class ConsentRecordSerializer(serializers.ModelSerializer):
+    purpose_display = serializers.CharField(source='get_purpose_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = ConsentRecord
+        fields = [
+            'id', 'purpose', 'purpose_display', 'status', 'status_display',
+            'notice_version', 'channel', 'granted_at', 'withdrawn_at'
+        ]
+        read_only_fields = ['id', 'notice_version', 'granted_at', 'withdrawn_at']
+
+
+class DataPrincipalNominationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataPrincipalNomination
+        fields = [
+            'id', 'nominee_name', 'nominee_email', 'nominee_phone',
+            'relationship', 'status', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class PrivacyGrievanceSerializer(serializers.ModelSerializer):
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = PrivacyGrievance
+        fields = [
+            'ticket_number', 'full_name', 'email', 'category', 'category_display',
+            'subject', 'description', 'status', 'status_display',
+            'resolution_notes', 'statutory_deadline', 'resolved_at', 'created_at'
+        ]
+        read_only_fields = ['ticket_number', 'status', 'resolution_notes', 'statutory_deadline', 'resolved_at', 'created_at']
+
