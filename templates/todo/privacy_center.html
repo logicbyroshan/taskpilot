@@ -1,0 +1,668 @@
+{% extends 'todo/base.html' %}
+{% load static %}
+
+{% block title %}Privacy & Data Rights Center - TaskFarmm{% endblock title %}
+
+{% block styles %}
+<style>
+.pc-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    color: #e4e4e7;
+}
+.pc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.pc-header h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pc-header p {
+    color: #a1a1aa;
+    font-size: 0.875rem;
+    margin: 4px 0 0 0;
+}
+.pc-nav-tabs {
+    display: flex;
+    gap: 8px;
+    background: #09090b;
+    padding: 6px;
+    border: 1px solid #27272a;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.pc-tab-btn {
+    background: transparent;
+    border: none;
+    color: #a1a1aa;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.pc-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+.pc-tab-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+}
+.pc-tab-content {
+    display: none;
+}
+.pc-tab-content.active {
+    display: block;
+}
+.pc-card {
+    background: #09090b;
+    border: 1px solid #27272a;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+.pc-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pc-card p {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    margin: 0 0 16px 0;
+    line-height: 1.55;
+}
+.pc-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.pc-stat-item {
+    background: #121418;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+}
+.pc-stat-item .num {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #60a5fa;
+}
+.pc-stat-item .label {
+    font-size: 0.75rem;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+.pc-consent-card {
+    background: #101216;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s;
+}
+.pc-consent-card:hover {
+    border-color: #3f3f46;
+}
+.pc-consent-card .info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+}
+.pc-consent-card .info p {
+    font-size: 0.8rem;
+    color: #a1a1aa;
+    margin: 0;
+    line-height: 1.4;
+}
+.pc-consent-card .meta {
+    font-size: 0.725rem;
+    color: #71717a;
+    margin-top: 6px;
+}
+.pc-badge-mandatory {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 6px;
+}
+.pc-badge-withdrawable {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 6px;
+}
+.pc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.835rem;
+}
+.pc-table th {
+    background: #121418;
+    color: #f4f4f5;
+    padding: 10px 12px;
+    font-weight: 600;
+    border-bottom: 1px solid #27272a;
+    text-align: left;
+}
+.pc-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #1f2228;
+    color: #a1a1aa;
+}
+.pc-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+.pc-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.725rem;
+    font-weight: 700;
+}
+.pc-status-submitted { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.pc-status-in_review { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.pc-status-resolved { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.pc-status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+.pc-btn {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.pc-btn:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+.pc-btn-danger {
+    background: #dc2626;
+    color: #ffffff;
+}
+.pc-btn-danger:hover {
+    background: #b91c1c;
+}
+.pc-btn-secondary {
+    background: #27272a;
+    color: #f4f4f5;
+}
+.pc-btn-secondary:hover {
+    background: #3f3f46;
+}
+.pc-form-group {
+    margin-bottom: 16px;
+}
+.pc-form-group label {
+    display: block;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: #d4d4d8;
+    margin-bottom: 6px;
+}
+.pc-form-control {
+    width: 100%;
+    background: #121418;
+    border: 1px solid #27272a;
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.pc-form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div class="pc-wrapper">
+    <!-- Header -->
+    <div class="pc-header">
+        <div>
+            <h2><i class="fas fa-shield-alt" style="color: #3b82f6;"></i> Privacy & Data Rights Center</h2>
+            <p>Exercise your statutory rights under the Digital Personal Data Protection Act, 2023 & DPDP Rules, 2025.</p>
+        </div>
+        <div>
+            <a href="{% url 'privacy_notice' %}" class="pc-btn pc-btn-secondary">
+                <i class="fas fa-file-alt"></i> View Privacy Notice
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="pc-nav-tabs" role="tablist">
+        <button type="button" class="pc-tab-btn {% if active_tab == 'dossier' %}active{% endif %}" onclick="switchTab('dossier')">
+            <i class="fas fa-file-download"></i> Data Dossier & Access
+        </button>
+        <button type="button" class="pc-tab-btn {% if active_tab == 'consents' %}active{% endif %}" onclick="switchTab('consents')">
+            <i class="fas fa-toggle-on"></i> Consent & Preferences
+        </button>
+        <button type="button" class="pc-tab-btn {% if active_tab == 'nomination' %}active{% endif %}" onclick="switchTab('nomination')">
+            <i class="fas fa-user-friends"></i> Data Nomination
+        </button>
+        <button type="button" class="pc-tab-btn {% if active_tab == 'grievances' %}active{% endif %}" onclick="switchTab('grievances')">
+            <i class="fas fa-balance-scale"></i> Privacy Grievances
+        </button>
+        <button type="button" class="pc-tab-btn {% if active_tab == 'erasure' %}active{% endif %}" onclick="switchTab('erasure')">
+            <i class="fas fa-trash-alt"></i> Account & Data Erasure
+        </button>
+        <button type="button" class="pc-tab-btn {% if active_tab == 'contact' %}active{% endif %}" onclick="switchTab('contact')">
+            <i class="fas fa-id-badge"></i> Grievance Officer
+        </button>
+    </div>
+
+    <!-- TAB 1: DATA DOSSIER & ACCESS (Section 11) -->
+    <div id="tab-dossier" class="pc-tab-content {% if active_tab == 'dossier' %}active{% endif %}">
+        <div class="pc-card">
+            <h3><i class="fas fa-file-invoice"></i> Right to Access Summary of Personal Data (Section 11)</h3>
+            <p>
+                Under Section 11 of the DPDP Act 2023, you have the statutory right to obtain a structured summary of personal data processed, identities of all Data Fiduciaries/Processors with whom data has been shared, and download your complete Data Dossier.
+            </p>
+
+            <div class="pc-stats-row">
+                <div class="pc-stat-item">
+                    <span class="num">{{ tasks_count }}</span>
+                    <span class="label">Tasks Managed</span>
+                </div>
+                <div class="pc-stat-item">
+                    <span class="num">{{ projects_count }}</span>
+                    <span class="label">Projects / Boards</span>
+                </div>
+                <div class="pc-stat-item">
+                    <span class="num">{{ comments_count }}</span>
+                    <span class="label">Comments</span>
+                </div>
+                <div class="pc-stat-item">
+                    <span class="num">{{ attachments_count }}</span>
+                    <span class="label">Files Attached</span>
+                </div>
+            </div>
+
+            <div style="background: #101216; border: 1px solid #27272a; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <h4 style="font-size: 0.95rem; color: #ffffff; margin: 0 0 8px 0;"><i class="fas fa-check-circle" style="color: #34d399;"></i> Your Identity & Account Profile</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; font-size: 0.825rem; color: #a1a1aa;">
+                    <div><strong>Username:</strong> {{ user.username }}</div>
+                    <div><strong>Email:</strong> {{ user.email|default:"Not specified" }}</div>
+                    <div><strong>Full Name:</strong> {{ user.get_full_name|default:user.username }}</div>
+                    <div><strong>Account Type:</strong> {% if user.profile.is_subuser %}Sub-User (Parent: {{ user.profile.parent_user.username }}){% else %}Workspace Owner{% endif %}</div>
+                    <div><strong>Role:</strong> {{ user.profile.get_role_display }}</div>
+                    <div><strong>Date Joined:</strong> {{ user.date_joined|date:"d M Y, H:i" }} UTC</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="{% url 'privacy_dossier_download' %}" class="pc-btn">
+                    <i class="fas fa-download"></i> Download Personal Data Dossier (JSON)
+                </a>
+                <a href="{% url 'privacy_dossier_download' %}?format=view" target="_blank" class="pc-btn pc-btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> View Raw JSON Dossier
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: CONSENTS & WITHDRAWAL (Section 6 & 6(4)) -->
+    <div id="tab-consents" class="pc-tab-content {% if active_tab == 'consents' %}active{% endif %}">
+        <div class="pc-card">
+            <h3><i class="fas fa-toggle-on"></i> Purpose-Specific Consent Management (Section 6)</h3>
+            <p>
+                In compliance with DPDP Act Section 6(4), you may grant or withdraw consent for optional processing purposes at any time. Withdrawal is executed with comparable ease without affecting the legality of prior processing.
+            </p>
+
+            {% for c in consents %}
+            <div class="pc-consent-card">
+                <div class="info">
+                    <h4>
+                        {{ c.title }}
+                        {% if c.is_mandatory %}
+                        <span class="pc-badge-mandatory">Mandatory for Service</span>
+                        {% else %}
+                        <span class="pc-badge-withdrawable">Withdrawable</span>
+                        {% endif %}
+                    </h4>
+                    <p>{{ c.description }}</p>
+                    <div class="meta">
+                        Notice Version: <strong>v{{ c.notice_version }}</strong> | 
+                        Status: <strong style="color: {% if c.is_granted %}#34d399{% else %}#f87171{% endif %};">{{ c.status|upper }}</strong>
+                        {% if c.granted_at %}| Last Granted: {{ c.granted_at }}{% endif %}
+                        {% if c.withdrawn_at %}| Withdrawn: {{ c.withdrawn_at }}{% endif %}
+                    </div>
+                </div>
+                <div>
+                    {% if c.is_mandatory %}
+                    <label class="switch" style="opacity: 0.6; cursor: not-allowed;" title="Mandatory for core service delivery">
+                        <input type="checkbox" checked disabled>
+                        <span class="slider"></span>
+                    </label>
+                    {% else %}
+                    <label class="switch">
+                        <input type="checkbox" {% if c.is_granted %}checked{% endif %} onchange="toggleConsent('{{ c.purpose }}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- TAB 3: DATA NOMINATION (Section 14) -->
+    <div id="tab-nomination" class="pc-tab-content {% if active_tab == 'nomination' %}active{% endif %}">
+        <div class="pc-card">
+            <h3><i class="fas fa-user-friends"></i> Data Principal Nomination (Section 14)</h3>
+            <p>
+                Under Section 14 of the DPDP Act 2023, you have the statutory right to designate an authorized nominee who can exercise Data Principal rights (access, correction, erasure) on your behalf in the event of death or incapacity.
+            </p>
+
+            {% if nominee %}
+            <div style="background: #101216; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="color: #34d399; margin: 0; font-size: 1rem;"><i class="fas fa-check-circle"></i> Active Nominee Designated</h4>
+                    <form method="post" action="{% url 'privacy_nomination_revoke' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="pc-btn pc-btn-danger" style="padding: 6px 12px; font-size: 0.775rem;" onclick="return confirm('Revoke this nominee designation?')">
+                            <i class="fas fa-user-slash"></i> Revoke Nominee
+                        </button>
+                    </form>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.85rem; color: #a1a1aa;">
+                    <div><strong>Nominee Name:</strong> <span style="color: #ffffff;">{{ nominee.nominee_name }}</span></div>
+                    <div><strong>Nominee Email:</strong> <span style="color: #ffffff;">{{ nominee.nominee_email }}</span></div>
+                    <div><strong>Relationship:</strong> <span style="color: #ffffff;">{{ nominee.relationship }}</span></div>
+                    <div><strong>Phone:</strong> <span style="color: #ffffff;">{{ nominee.nominee_phone|default:"None" }}</span></div>
+                    <div><strong>Designated On:</strong> {{ nominee.created_at|date:"d M Y" }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'privacy_nomination_save' %}">
+                {% csrf_token %}
+                <h4 style="font-size: 0.95rem; color: #ffffff; margin: 0 0 14px 0;">
+                    {% if nominee %}Update Nominee Details{% else %}Register New Nominee{% endif %}
+                </h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="pc-form-group">
+                        <label for="{{ nomination_form.nominee_name.id_for_label }}">Nominee Full Name *</label>
+                        {{ nomination_form.nominee_name }}
+                    </div>
+                    <div class="pc-form-group">
+                        <label for="{{ nomination_form.nominee_email.id_for_label }}">Nominee Email Address *</label>
+                        {{ nomination_form.nominee_email }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="pc-form-group">
+                        <label for="{{ nomination_form.relationship.id_for_label }}">Relationship to Data Principal *</label>
+                        {{ nomination_form.relationship }}
+                    </div>
+                    <div class="pc-form-group">
+                        <label for="{{ nomination_form.nominee_phone.id_for_label }}">Phone Number</label>
+                        {{ nomination_form.nominee_phone }}
+                    </div>
+                </div>
+
+                <div class="pc-form-group">
+                    <label for="{{ nomination_form.notes.id_for_label }}">Authorization Notes</label>
+                    {{ nomination_form.notes }}
+                </div>
+
+                <button type="submit" class="pc-btn">
+                    <i class="fas fa-save"></i> Save Nominee Designation
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 4: PRIVACY GRIEVANCES (Section 13) -->
+    <div id="tab-grievances" class="pc-tab-content {% if active_tab == 'grievances' %}active{% endif %}">
+        <div class="pc-card">
+            <h3><i class="fas fa-balance-scale"></i> Privacy Grievance Redressal (Section 13 & DPDP Rules 2025)</h3>
+            <p>
+                Submit any privacy concerns or request disputes directly to our Data Protection & Grievance Officer. Under the DPDP Rules 2025, every grievance is resolved within a statutory period not exceeding <strong>90 days</strong>.
+            </p>
+
+            <!-- Submit Grievance Form -->
+            <form method="post" action="{% url 'privacy_grievance_submit' %}" style="background: #101216; border: 1px solid #27272a; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+                {% csrf_token %}
+                <h4 style="font-size: 0.95rem; color: #ffffff; margin: 0 0 14px 0;"><i class="fas fa-plus-circle" style="color: #3b82f6;"></i> Submit New Privacy Grievance</h4>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="pc-form-group">
+                        <label for="{{ grievance_form.full_name.id_for_label }}">Full Name *</label>
+                        {{ grievance_form.full_name }}
+                    </div>
+                    <div class="pc-form-group">
+                        <label for="{{ grievance_form.email.id_for_label }}">Email Address *</label>
+                        {{ grievance_form.email }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="pc-form-group">
+                        <label for="{{ grievance_form.category.id_for_label }}">Grievance Category *</label>
+                        {{ grievance_form.category }}
+                    </div>
+                    <div class="pc-form-group">
+                        <label for="{{ grievance_form.subject.id_for_label }}">Subject Summary *</label>
+                        {{ grievance_form.subject }}
+                    </div>
+                </div>
+
+                <div class="pc-form-group">
+                    <label for="{{ grievance_form.description.id_for_label }}">Detailed Description *</label>
+                    {{ grievance_form.description }}
+                </div>
+
+                <button type="submit" class="pc-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Grievance Ticket
+                </button>
+            </form>
+
+            <!-- List of User's Grievances -->
+            <h4 style="font-size: 0.95rem; color: #ffffff; margin: 24px 0 12px 0;"><i class="fas fa-history"></i> Your Grievance History</h4>
+            {% if grievances %}
+            <div style="overflow-x: auto; border: 1px solid #27272a; border-radius: 10px;">
+                <table class="pc-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Category</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Statutory Deadline</th>
+                            <th>Submitted On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in grievances %}
+                        <tr>
+                            <td><strong>{{ g.ticket_number }}</strong></td>
+                            <td>{{ g.get_category_display }}</td>
+                            <td>{{ g.subject }}</td>
+                            <td><span class="pc-status-badge pc-status-{{ g.status }}">{{ g.get_status_display }}</span></td>
+                            <td>{{ g.statutory_deadline|date:"d M Y" }}</td>
+                            <td>{{ g.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 24px; color: #71717a; font-size: 0.85rem; border: 1px dashed #27272a; border-radius: 10px;">
+                <i class="fas fa-check-circle" style="font-size: 1.5rem; color: #34d399; margin-bottom: 6px; display: block;"></i>
+                No grievances submitted. All systems compliant.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TAB 5: ACCOUNT & DATA ERASURE (Section 12(3)) -->
+    <div id="tab-erasure" class="pc-tab-content {% if active_tab == 'erasure' %}active{% endif %}">
+        <div class="pc-card" style="border-color: rgba(239, 68, 68, 0.4);">
+            <h3 style="color: #f87171;"><i class="fas fa-exclamation-triangle"></i> Permanent Account & Data Erasure (Section 12(3))</h3>
+            <p>
+                Under Section 12(3) of the DPDP Act 2023, you have the right to request permanent erasure of your personal data when it is no longer necessary for the specified purpose for which it was collected.
+            </p>
+
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <h4 style="color: #f87171; margin: 0 0 8px 0; font-size: 0.95rem;"><i class="fas fa-skull-crossbones"></i> Warning: Irreversible Action</h4>
+                <ul style="font-size: 0.825rem; color: #d4d4d8; margin: 0; padding-left: 20px; line-height: 1.6;">
+                    <li>Permanently deletes all tasks, projects, Kanban boards, checklists, and comments.</li>
+                    <li>Permanently purges all uploaded file attachments from disk and media storage.</li>
+                    <li>If you are an account owner, deletes all sub-user accounts under your parent workspace.</li>
+                    <li>Terminates all active login sessions and revokes OAuth / JWT access tokens.</li>
+                </ul>
+            </div>
+
+            <form method="post" action="{% url 'privacy_account_erase' %}">
+                {% csrf_token %}
+                <div class="pc-form-group">
+                    <label for="confirm_erase">Type <strong>ERASE MY DATA</strong> in capital letters to confirm *</label>
+                    <input type="text" id="confirm_erase" name="confirm_erase" class="pc-form-control" placeholder="ERASE MY DATA" required autocomplete="off">
+                </div>
+
+                <div class="pc-form-group">
+                    <label for="erase_password">Enter your current password to authorize erasure *</label>
+                    <input type="password" id="erase_password" name="password" class="pc-form-control" placeholder="Your password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="pc-btn pc-btn-danger" onclick="return confirm('Are you completely sure you want to permanently erase your account and all associated personal data? This action cannot be undone.')">
+                    <i class="fas fa-trash-alt"></i> Permanently Erase My Account & All Personal Data
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 6: GRIEVANCE OFFICER DETAILS & ESCALATION -->
+    <div id="tab-contact" class="pc-tab-content {% if active_tab == 'contact' %}active{% endif %}">
+        <div class="pc-card">
+            <h3><i class="fas fa-id-badge"></i> Data Protection & Grievance Redressal Officer</h3>
+            <p>
+                Published pursuant to DPDP Act, 2023 Section 13 and DPDP Rules, 2025:
+            </p>
+
+            <div style="background: #101216; border: 1px solid #27272a; border-radius: 10px; padding: 22px; margin-bottom: 20px;">
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Officer Name:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_NAME|default:"Roshan Damor" }}</p>
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Designation:</strong> Data Protection & Grievance Redressal Officer</p>
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Official Email:</strong> <a href="mailto:{{ dpdp_config.GRIEVANCE_OFFICER_EMAIL|default:'privacy@taskfarmm.com' }}" style="color: #60a5fa;">{{ dpdp_config.GRIEVANCE_OFFICER_EMAIL|default:"privacy@taskfarmm.com" }}</a></p>
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Phone Helpline:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_PHONE|default:"+91-11-4000-8000" }}</p>
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Registered Address:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_ADDRESS|default:"TaskFarmm Grievance Redressal Cell, Sector 62, Noida, UP 201309, India" }}</p>
+                <p style="font-size: 0.9rem; margin: 6px 0; color: #f4f4f5;"><strong>Statutory SLA:</strong> All complaints resolved within 90 days of receipt.</p>
+            </div>
+
+            <div style="background: #101216; border: 1px solid #27272a; border-radius: 10px; padding: 22px;">
+                <h4 style="color: #60a5fa; margin: 0 0 8px 0; font-size: 0.95rem;"><i class="fas fa-landmark"></i> Escalation to Data Protection Board of India</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: #a1a1aa; line-height: 1.55;">
+                    If you remain aggrieved after receiving a resolution from our Grievance Officer, or if a resolution is not provided within the statutory 90-day period, you are entitled under the DPDP Act 2023 to submit an appeal / complaint to the <strong>Data Protection Board of India</strong> via official government channels at <a href="{{ dpdp_config.BOARD_ESCALATION_URL|default:'https://www.meity.gov.in/dpdp' }}" target="_blank" style="color: #60a5fa;">{{ dpdp_config.BOARD_ESCALATION_URL|default:'https://www.meity.gov.in/dpdp' }}</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.pc-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.pc-tab-content').forEach(content => content.classList.remove('active'));
+
+        const targetBtn = Array.from(document.querySelectorAll('.pc-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+        if (targetBtn) targetBtn.classList.add('active');
+
+        const targetContent = document.getElementById('tab-' + tabId);
+        if (targetContent) targetContent.classList.add('active');
+
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabId);
+        window.history.replaceState({}, '', url);
+    }
+
+    function toggleConsent(purpose, isGranted) {
+        const csrfToken = getCsrfToken() || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        fetch('/privacy/consent/toggle/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                purpose: purpose,
+                status: isGranted ? 'granted' : 'withdrawn'
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (window.showToast) {
+                    window.showToast(data.message, isGranted ? 'success' : 'info');
+                }
+            } else {
+                alert(data.error || 'Failed to update consent.');
+            }
+        })
+        .catch(err => {
+            alert('An error occurred updating consent.');
+        });
+    }
+</script>
+{% endblock scripts %}

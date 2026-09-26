@@ -85,7 +85,7 @@ def _provision_google_user(email, first_name="", last_name="", picture=""):
         user.is_active = True
         user.save(update_fields=['is_active'])
 
-    # Starter project for new registrations
+    # Starter project & DPDP Consent for new registrations
     if is_new:
         if not Category.objects.filter(user=user).exists():
             Category.objects.create(
@@ -95,6 +95,11 @@ def _provision_google_user(email, first_name="", last_name="", picture=""):
                 description="Default workspace for your tasks & quick ideas.",
                 board_template=Category.BoardTemplate.SMART,
             )
+        try:
+            from .privacy_services import ConsentService
+            ConsentService.record_initial_user_consents(user, opt_in_notifications=True, opt_in_ai=True, channel='google_sso')
+        except Exception as e:
+            logger.warning('Could not record initial DPDP consent for Google user: %s', e)
 
     return user, is_new
 

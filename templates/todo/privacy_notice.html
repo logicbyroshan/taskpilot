@@ -1,0 +1,437 @@
+{% extends 'todo/base.html' %}
+{% load static %}
+
+{% block title %}Privacy Notice - DPDP Act 2023 & DPDP Rules 2025 - TaskFarmm{% endblock title %}
+
+{% block styles %}
+<style>
+.privacy-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    color: #e4e4e7;
+}
+.privacy-hero {
+    background: linear-gradient(135deg, rgba(39, 39, 42, 0.4) 0%, rgba(9, 9, 11, 0.8) 100%);
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+}
+.privacy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+.privacy-hero h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px 0;
+    line-height: 1.25;
+}
+.privacy-hero p {
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+}
+.privacy-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #27272a;
+}
+.privacy-meta-item {
+    font-size: 0.825rem;
+}
+.privacy-meta-item span {
+    display: block;
+    color: #71717a;
+    margin-bottom: 2px;
+}
+.privacy-meta-item strong {
+    color: #f4f4f5;
+}
+.privacy-section {
+    background: #09090b;
+    border: 1px solid #27272a;
+    border-radius: 14px;
+    padding: 26px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+.privacy-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.privacy-section h2 i {
+    color: #3b82f6;
+}
+.privacy-section p, .privacy-section li {
+    font-size: 0.885rem;
+    color: #a1a1aa;
+    line-height: 1.65;
+}
+.privacy-section ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+.privacy-table-responsive {
+    overflow-x: auto;
+    margin: 16px 0;
+    border-radius: 10px;
+    border: 1px solid #27272a;
+}
+.privacy-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.835rem;
+}
+.privacy-table th {
+    background: #121418;
+    color: #f4f4f5;
+    padding: 12px 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #27272a;
+    white-space: nowrap;
+}
+.privacy-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #1f2228;
+    color: #a1a1aa;
+    vertical-align: top;
+}
+.privacy-table tr:last-child td {
+    border-bottom: none;
+}
+.privacy-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+.privacy-rights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+.privacy-right-card {
+    background: #101216;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    padding: 18px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.privacy-right-card:hover {
+    transform: translateY(-2px);
+    border-color: #3f3f46;
+}
+.privacy-right-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f4f4f5;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.privacy-right-card h4 i {
+    color: #60a5fa;
+}
+.privacy-right-card p {
+    font-size: 0.82rem;
+    color: #a1a1aa;
+    margin: 0;
+}
+.privacy-btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+.privacy-btn-action:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div class="privacy-container">
+    <!-- Hero Banner -->
+    <div class="privacy-hero">
+        <span class="privacy-badge"><i class="fas fa-shield-alt"></i> Official Privacy Notice</span>
+        <h1>Digital Personal Data Protection (DPDP) Compliance Notice</h1>
+        <p>
+            This Privacy Notice is provided in accordance with <strong>Section 5 of the Digital Personal Data Protection Act, 2023</strong> and the <strong>Digital Personal Data Protection Rules, 2025</strong>. It itemizes the personal data collected, specific processing purposes, third-party processors, retention periods, and your statutory Data Principal rights.
+        </p>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'privacy_center' %}" class="privacy-btn-action">
+            <i class="fas fa-user-shield"></i> Open Privacy & Data Rights Center
+        </a>
+        {% else %}
+        <a href="{% url 'register' %}" class="privacy-btn-action">
+            <i class="fas fa-user-plus"></i> Create Account
+        </a>
+        {% endif %}
+
+        <div class="privacy-meta-grid">
+            <div class="privacy-meta-item">
+                <span>Data Fiduciary:</span>
+                <strong>{{ dpdp_config.DATA_FIDUCIARY_NAME|default:"TaskFarmm Technologies" }}</strong>
+            </div>
+            <div class="privacy-meta-item">
+                <span>Notice Version:</span>
+                <strong>v{{ dpdp_config.NOTICE_VERSION|default:"1.0-2025-DPDP" }}</strong>
+            </div>
+            <div class="privacy-meta-item">
+                <span>Statutory Grievance SLA:</span>
+                <strong>≤ {{ dpdp_config.STATUTORY_GRIEVANCE_DAYS|default:"90" }} Days</strong>
+            </div>
+            <div class="privacy-meta-item">
+                <span>Grievance Officer Contact:</span>
+                <strong>{{ dpdp_config.GRIEVANCE_OFFICER_EMAIL|default:"privacy@taskfarmm.com" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Data Fiduciary Role & Scope -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-building"></i> 1. Data Fiduciary & Applicable Scope</h2>
+        <p>
+            <strong>{{ dpdp_config.DATA_FIDUCIARY_NAME|default:"TaskFarmm Technologies" }}</strong> operates as the <strong>Data Fiduciary</strong> under the DPDP Act 2023 for individual account owners and registered users, determining the purpose and means of personal data processing for task management, workspace collaboration, and account security.
+        </p>
+        <p>
+            Where an account owner provisions team member / sub-user accounts within their private enterprise workspace, the parent organization acts as the primary Data Fiduciary regarding internal employee/team assignments, with TaskFarmm acting as the underlying technical platform and infrastructure processor.
+        </p>
+    </section>
+
+    <!-- Section 2: Personal Data Inventory & Processing Table -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-table"></i> 2. Itemized Personal Data Inventory & Lawful Processing Matrix</h2>
+        <p>
+            In compliance with DPDP Act Section 5 and Rule requirements, the table below provides a comprehensive description of every category of personal data processed, specific purpose, lawful basis, storage location, and retention schedule:
+        </p>
+
+        <div class="privacy-table-responsive">
+            <table class="privacy-table">
+                <thead>
+                    <tr>
+                        <th>Data Category</th>
+                        <th>Specific Data Fields</th>
+                        <th>Specified Processing Purpose</th>
+                        <th>Lawful Basis</th>
+                        <th>Retention Schedule</th>
+                        <th>Deletion Workflow</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Identity & Authentication</strong></td>
+                        <td>Username, Email, Full Name, Password Hash, Google OAuth ID/Tokens</td>
+                        <td>Account provisioning, secure login verification, password reset, and workspace attribution.</td>
+                        <td>Section 6 Consent / Section 4 Lawful Use</td>
+                        <td>Retained for active lifetime of account.</td>
+                        <td>Cascading permanent deletion upon account erasure request.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Workspace & Team Hierarchy</strong></td>
+                        <td>Sub-user usernames, display names, assigned roles, project permissions</td>
+                        <td>Enabling multi-user team collaboration, access control, and workspace task delegation.</td>
+                        <td>Section 6 Consent & Workspace contract</td>
+                        <td>Retained while parent account is active.</td>
+                        <td>Self-service deletion by owner or complete account erasure.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tasks, Projects & Content</strong></td>
+                        <td>Task titles, descriptions, checklists, project names, colors, due dates</td>
+                        <td>Core task and project orchestration, Kanban status tracking, progress metrics.</td>
+                        <td>Section 6 Consent (Core Service Delivery)</td>
+                        <td>Retained during active workspace usage.</td>
+                        <td>Self-service deletion or permanent account erasure.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Card Comments & Discussions</strong></td>
+                        <td>Comment text, timestamps, author identity</td>
+                        <td>Collaborative card activity stream, task audit discussion, team updates.</td>
+                        <td>Section 6 Consent (Core Service Delivery)</td>
+                        <td>Retained with associated task lifecycle.</td>
+                        <td>Author deletion, task deletion, or account erasure.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uploaded Attachments</strong></td>
+                        <td>Uploaded documents, PDFs, images, spreadsheets (up to 10MB)</td>
+                        <td>Task-associated file attachments and visual specifications.</td>
+                        <td>Section 6 Consent (Core Service Delivery)</td>
+                        <td>Retained with associated task.</td>
+                        <td>Physical file purge from disk/media storage upon deletion or erasure.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notifications & Communications</strong></td>
+                        <td>Notification titles, alert messages, recipient email, delivery queue state</td>
+                        <td>Delivering in-app bell alerts and outbound task reminder/comment emails.</td>
+                        <td>Section 6 Purpose Consent (Opt-in / Withdrawable)</td>
+                        <td>Auto-purged after {{ dpdp_config.RETENTION_NOTIFICATIONS_DAYS|default:"90" }} days via retention engine.</td>
+                        <td>Automated retention cron cleanup (`cleanup_retention_data`).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI Assistant Prompts</strong></td>
+                        <td>Task breakdown queries and project generation prompts</td>
+                        <td>Generating suggested action plans, subtask breakdowns, and sprint templates.</td>
+                        <td>Section 6 Purpose Consent (Opt-in / Withdrawable)</td>
+                        <td>Transient processing; prompts not used to train global AI models.</td>
+                        <td>Immediate in-memory processing.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Audit & Consent Records</strong></td>
+                        <td>Consent timestamps, notice version, IP address, audit actions</td>
+                        <td>Regulatory compliance demonstration under DPDP Act & Rules.</td>
+                        <td>Legal obligation & regulatory compliance</td>
+                        <td>Retained up to {{ dpdp_config.RETENTION_AUDIT_LOGS_DAYS|default:"365" }} days.</td>
+                        <td>Pseudonymized upon account erasure; purged after retention window.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Section 3: Third-Party Data Processors -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-network-wired"></i> 3. Third-Party Data Processors & Sub-Processors</h2>
+        <p>
+            TaskFarmm engages trusted infrastructure and communication providers bound by strict confidentiality and data protection obligations:
+        </p>
+        <div class="privacy-table-responsive">
+            <table class="privacy-table">
+                <thead>
+                    <tr>
+                        <th>Processor / Service</th>
+                        <th>Role & Service Category</th>
+                        <th>Data Processed</th>
+                        <th>Location & Safeguards</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SMTP Outbound Email Infrastructure</strong></td>
+                        <td>Transactional Email Delivery</td>
+                        <td>Recipient email address, notification subject, and rendered task context</td>
+                        <td>Encrypted TLS/SSL in transit; no permanent retention beyond transmission queue.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Google Identity Services (OAuth2)</strong></td>
+                        <td>Federated Single Sign-On</td>
+                        <td>Google Profile ID, verified email address, full name</td>
+                        <td>Standard OAuth 2.0 PKCE / GIS cryptographic verification; zero password sharing.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OpenHinglish NLP Engine</strong></td>
+                        <td>Local Multi-lingual Spell-check</td>
+                        <td>Task title / comment text during interactive editing</td>
+                        <td>Executed locally on the server; zero external third-party API data transmission.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Section 4: Children's Personal Data & Age Affirmation -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-child"></i> 4. Children's Personal Data Safeguards (DPDP Section 9)</h2>
+        <p>
+            Under Section 2(f) and Section 9 of the DPDP Act 2023, a child is defined as an individual under 18 years of age.
+        </p>
+        <ul>
+            <li><strong>No Tracking or Profiling:</strong> TaskFarmm strictly prohibits tracking, behavioral monitoring, or targeted advertising directed at children.</li>
+            <li><strong>Age Affirmation:</strong> Registration requires explicit confirmation that the user is at least 18 years of age.</li>
+            <li><strong>Inadvertent Submission:</strong> If we discover that personal data of an individual under 18 has been collected without verifiable parental consent, such data will be immediately erased.</li>
+        </ul>
+    </section>
+
+    <!-- Section 5: Data Principal Rights -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-user-shield"></i> 5. Data Principal Rights & Self-Service Workflows</h2>
+        <p>
+            Under the DPDP Act 2023, every Data Principal possesses statutory rights that can be exercised directly through our interactive <a href="{% url 'privacy_center' %}" style="color: #60a5fa; font-weight: 600;">Privacy & Data Rights Center</a>:
+        </p>
+
+        <div class="privacy-rights-grid">
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-file-download"></i> Right to Access (Section 11)</h4>
+                <p>Access a structured summary of all personal data processed, sharing identities, and download your complete Personal Data Dossier (JSON/HTML).</p>
+            </div>
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-edit"></i> Right to Correction (Section 12)</h4>
+                <p>Correct inaccurate personal data, complete incomplete information, and update your profile details with immediate downstream synchronization.</p>
+            </div>
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-trash-alt"></i> Right to Erasure (Section 12(3))</h4>
+                <p>Request permanent deletion of your account, files, projects, tasks, comments, and notifications when processing is no longer required.</p>
+            </div>
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-toggle-on"></i> Right to Withdraw Consent (Section 6(4))</h4>
+                <p>Withdraw optional consents (notifications, AI processing, updates) at any time with ease comparable to giving consent.</p>
+            </div>
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-user-friends"></i> Right to Nominate (Section 14)</h4>
+                <p>Designate an authorized representative/nominee who can exercise your data principal rights in the event of death or incapacity.</p>
+            </div>
+            <div class="privacy-right-card">
+                <h4><i class="fas fa-balance-scale"></i> Right to Grievance Redressal (Section 13)</h4>
+                <p>Submit privacy grievances to our Grievance Redressal Officer with guaranteed statutory resolution within 90 days.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Grievance Redressal & DPO Contact -->
+    <section class="privacy-section">
+        <h2><i class="fas fa-headset"></i> 6. Grievance Redressal Mechanism & Officer Details</h2>
+        <p>
+            In compliance with <strong>Section 13 of the DPDP Act, 2023</strong> and the <strong>DPDP Rules, 2025</strong>, TaskFarmm has established an official Grievance Redressal mechanism with a statutory resolution timeframe not exceeding <strong>90 days</strong>:
+        </p>
+
+        <div style="background: #101216; border: 1px solid #27272a; border-radius: 10px; padding: 20px; margin: 16px 0;">
+            <div style="font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
+                <i class="fas fa-id-badge" style="color: #60a5fa; margin-right: 6px;"></i> Grievance Redressal Officer / Data Protection Officer:
+            </div>
+            <p style="margin: 4px 0; color: #f4f4f5;"><strong>Name / Title:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_NAME|default:"Roshan Damor (Data Protection & Grievance Officer)" }}</p>
+            <p style="margin: 4px 0; color: #f4f4f5;"><strong>Official Email:</strong> <a href="mailto:{{ dpdp_config.GRIEVANCE_OFFICER_EMAIL|default:'privacy@taskfarmm.com' }}" style="color: #60a5fa;">{{ dpdp_config.GRIEVANCE_OFFICER_EMAIL|default:"privacy@taskfarmm.com" }}</a></p>
+            <p style="margin: 4px 0; color: #f4f4f5;"><strong>Helpline:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_PHONE|default:"+91-11-4000-8000" }}</p>
+            <p style="margin: 4px 0; color: #f4f4f5;"><strong>Postal Address:</strong> {{ dpdp_config.GRIEVANCE_OFFICER_ADDRESS|default:"TaskFarmm Grievance Redressal Cell, Sector 62, Noida, UP 201309, India" }}</p>
+            <p style="margin: 4px 0; color: #a1a1aa; font-size: 0.8rem;"><strong>Statutory SLA:</strong> All complaints resolved within a period not exceeding 90 days from receipt.</p>
+        </div>
+
+        <p>
+            If you are not satisfied with the resolution provided by our Grievance Officer, you have the statutory right to escalate and file a complaint with the <strong>Data Protection Board of India</strong> pursuant to the provisions of the DPDP Act, 2023.
+        </p>
+    </section>
+</div>
+{% endblock content %}

@@ -228,6 +228,22 @@
                         </div>
                     </div>
 
+                    <!-- DPDP Act 2023 Consent & Age Affirmation Safeguards -->
+                    <div style="margin: 12px 0 16px; font-size: 0.775rem; color: #a1a1aa; line-height: 1.45; display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: #d4d4d8;">
+                            {{ form.dpdp_consent_essential }}
+                            <span>I agree to the processing of my personal data for workspace delivery under the <a href="{% url 'privacy_notice' %}" target="_blank" style="color: #60a5fa; text-decoration: underline;">DPDP Act 2023 Notice</a>. *</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: #d4d4d8;">
+                            {{ form.age_affirmation }}
+                            <span>I confirm that I am at least <strong>18 years of age</strong> (DPDP Act Section 9). *</span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; color: #a1a1aa;">
+                            {{ form.dpdp_consent_notifications }}
+                            <span>Receive email alerts for task assignments & due dates.</span>
+                        </label>
+                    </div>
+
                     <button type="submit" class="auth-submit-btn" style="margin-top: 4px;">
                         <i class="fas fa-user-plus"></i> Create Workspace & Sign In
                     </button>

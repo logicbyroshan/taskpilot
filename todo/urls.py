@@ -87,4 +87,16 @@ urlpatterns = [
     path('api/notifications/unread-count/', views.api_notifications_unread_count, name='api_notifications_unread_count'),
     path('api/notifications/<int:pk>/read/', views.api_notification_mark_read, name='api_notification_mark_read'),
     path('api/notifications/read-all/', views.api_notification_mark_all_read, name='api_notification_mark_all_read'),
-]
+
+    # DPDP Act 2023 & DPDP Rules 2025 Privacy & Data Governance Hub
+    path('privacy/', views.privacy_notice_view, name='privacy_notice'),
+    path('privacy-notice/', views.privacy_notice_view, name='privacy_notice_alt'),
+    path('privacy/center/', views.privacy_center_view, name='privacy_center'),
+    path('privacy/dossier/download/', views.privacy_dossier_download, name='privacy_dossier_download'),
+    path('privacy/consent/toggle/', views.privacy_consent_toggle, name='privacy_consent_toggle'),
+    path('privacy/nomination/save/', views.privacy_nomination_save, name='privacy_nomination_save'),
+    path('privacy/nomination/revoke/', views.privacy_nomination_revoke, name='privacy_nomination_revoke'),
+    path('privacy/grievance/submit/', views.privacy_grievance_submit, name='privacy_grievance_submit'),
+    path('privacy/grievance/track/', views.privacy_grievance_track, name='privacy_grievance_track'),
+    path('privacy/account/erase/', views.privacy_account_erase, name='privacy_account_erase'),
+]

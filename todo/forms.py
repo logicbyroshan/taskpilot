@@ -195,6 +195,31 @@ class RegisterForm(forms.ModelForm):
         })
     )
 
+    dpdp_consent_essential = forms.BooleanField(
+        required=True,
+        initial=True,
+        label="I agree to the processing of my personal data for workspace delivery under the DPDP Act 2023.",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_dpdp_consent_essential'})
+    )
+    age_affirmation = forms.BooleanField(
+        required=True,
+        initial=True,
+        label="I confirm that I am at least 18 years of age (DPDP Act 2023, Section 9).",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_age_affirmation'})
+    )
+    dpdp_consent_notifications = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Receive email notifications for task alerts, reminders & discussions.",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_dpdp_consent_notifications'})
+    )
+    dpdp_consent_ai = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Enable AI Roadmap & Task Suggestion assistant.",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_dpdp_consent_ai'})
+    )
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'email']
@@ -236,3 +261,35 @@ class RegisterForm(forms.ModelForm):
                     self.add_error('password', error)
 
         return cleaned_data
+
+
+# ============================================================
+#  DPDP PRIVACY & GRIEVANCE FORMS
+# ============================================================
+
+from .models import PrivacyGrievance, DataPrincipalNomination
+
+class PrivacyGrievanceForm(forms.ModelForm):
+    class Meta:
+        model = PrivacyGrievance
+        fields = ['full_name', 'email', 'category', 'subject', 'description']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your Full Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'your.email@example.com'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Brief summary of grievance'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Provide detailed information about your privacy concern or request...'}),
+        }
+
+
+class NominationForm(forms.ModelForm):
+    class Meta:
+        model = DataPrincipalNomination
+        fields = ['nominee_name', 'nominee_email', 'nominee_phone', 'relationship', 'notes']
+        widgets = {
+            'nominee_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nominee Full Name'}),
+            'nominee_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'nominee@example.com'}),
+            'nominee_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+91 98765 43210'}),
+            'relationship': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Spouse, Sibling, Legal Representative'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional authorization notes...'}),
+        }

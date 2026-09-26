@@ -335,7 +335,28 @@ def register_view(request):
         user.save()
 
         # Create default UserProfile
-        UserProfile.objects.get_or_create(user=user)
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        opt_in_notifications = form.cleaned_data.get('dpdp_consent_notifications', True)
+        opt_in_ai = form.cleaned_data.get('dpdp_consent_ai', True)
+
+        if not opt_in_notifications:
+            profile.notify_task_reminders = False
+            profile.notify_due_date_alerts = False
+            profile.save(update_fields=['notify_task_reminders', 'notify_due_date_alerts'])
+
+        # Record DPDP Act 2023 Consent Records
+        try:
+            from .privacy_services import ConsentService
+            ConsentService.record_initial_user_consents(
+                user=user,
+                opt_in_notifications=opt_in_notifications,
+                opt_in_ai=opt_in_ai,
+                opt_in_updates=False,
+                request=request,
+                channel='web_registration'
+            )
+        except Exception as e:
+            logger.warning('Could not record initial DPDP consents on registration: %s', e)
 
         # Create default starter project
         Category.objects.create(
@@ -1584,4 +1605,312 @@ def api_subuser_delete(request, pk):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
     except Exception as e:
         logger.error('Subuser delete failed: %s', e)
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# ============================================================
+#  DPDP ACT, 2023 & DPDP RULES, 2025 PRIVACY VIEWS
+# ============================================================
+
+from .privacy_services import (
+    ConsentService, DataPrincipalRightsService, GrievanceService,
+    NominationService, RetentionService
+)
+from .forms import PrivacyGrievanceForm, NominationForm
+from .models import PrivacyGrievance, ConsentRecord, DataPrincipalNomination
+
+
+def privacy_notice_view(request):
+    """
+    DPDP Section 5 & DPDP Rules 2025 Notice Page.
+    Itemizes personal data categories, specific purposes of processing, lawful bases,
+    Data Principal rights, 90-day grievance redressal, and official DPO / Grievance Officer details.
+    """
+    dpdp_cfg = getattr(settings, 'DPDP_CONFIG', {})
+    context = {
+        'active_page': 'privacy_notice',
+        'dpdp_config': dpdp_cfg,
+    }
+    return render(request, 'todo/privacy_notice.html', context)
+
+
+@login_required
+def privacy_center_view(request):
+    """
+    DPDP Act 2023 & DPDP Rules 2025 Privacy & Data Rights Center.
+    Interactive hub for:
+      - Personal data dossier & export (Section 11)
+      - Consent preferences & withdrawal (Section 6)
+      - Data Principal nomination (Section 14)
+      - Privacy grievances with 90-day statutory SLA tracking (Section 13)
+      - Account & personal data erasure (Section 12(3))
+    """
+    dpdp_cfg = getattr(settings, 'DPDP_CONFIG', {})
+    consents = ConsentService.get_user_consent_overview(request.user)
+    nominee = NominationService.get_nominee(request.user)
+    grievances = PrivacyGrievance.objects.filter(user=request.user).order_by('-created_at')
+
+    grievance_form = PrivacyGrievanceForm(initial={
+        'full_name': request.user.get_full_name() or request.user.username,
+        'email': request.user.email,
+    })
+    nomination_form = NominationForm(instance=nominee) if nominee else NominationForm()
+
+    # User data statistics for overview
+    tasks_count = Task.objects.filter(Q(user=request.user) | Q(assignees=request.user)).distinct().count()
+    projects_count = Category.objects.filter(Q(user=request.user) | Q(members=request.user)).distinct().count()
+    comments_count = TaskComment.objects.filter(user=request.user).count()
+    attachments_count = TaskAttachment.objects.filter(user=request.user).count()
+
+    active_tab = request.GET.get('tab', 'dossier')
+
+    context = {
+        'active_page': 'privacy_center',
+        'dpdp_config': dpdp_cfg,
+        'consents': consents,
+        'nominee': nominee,
+        'grievances': grievances,
+        'grievance_form': grievance_form,
+        'nomination_form': nomination_form,
+        'tasks_count': tasks_count,
+        'projects_count': projects_count,
+        'comments_count': comments_count,
+        'attachments_count': attachments_count,
+        'active_tab': active_tab,
+    }
+    return render(request, 'todo/privacy_center.html', context)
+
+
+@login_required
+def privacy_dossier_download(request):
+    """
+    DPDP Section 11 Right to Access:
+    Generates and returns the user's complete Personal Data Dossier as a downloadable JSON file.
+    """
+    dossier = DataPrincipalRightsService.generate_personal_data_dossier(request.user, request=request)
+    
+    fmt = request.GET.get('format', 'json').lower()
+    if fmt == 'view':
+        return JsonResponse(dossier, json_dumps_params={'indent': 2})
+
+    response = HttpResponse(
+        json.dumps(dossier, indent=2),
+        content_type='application/json; charset=utf-8'
+    )
+    filename = f"taskfarmm_dpdp_personal_data_dossier_{request.user.username}.json"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+@require_POST
+def privacy_consent_toggle(request):
+    """
+    DPDP Section 6(4) Consent Withdrawal / Grant AJAX endpoint.
+    Allows toggling optional consent purposes with immediate backend synchronization.
+    """
+    try:
+        data = json.loads(request.body) if request.content_type and 'application/json' in request.content_type else request.POST
+        purpose = data.get('purpose', '').strip()
+        new_status = data.get('status', '').strip().lower()
+
+        if not purpose:
+            return JsonResponse({'success': False, 'error': 'Purpose is required.'}, status=400)
+
+        if new_status in ('withdrawn', 'false', '0'):
+            record = ConsentService.withdraw_consent(request.user, purpose, request=request)
+            is_granted = False
+            msg = f"Consent for '{record.get_purpose_display()}' has been withdrawn."
+        else:
+            record = ConsentService.record_consent(
+                request.user, purpose,
+                status=ConsentRecord.Status.GRANTED,
+                request=request,
+                channel='privacy_center'
+            )
+            is_granted = True
+            msg = f"Consent for '{record.get_purpose_display()}' has been granted."
+
+        return JsonResponse({
+            'success': True,
+            'message': msg,
+            'purpose': purpose,
+            'is_granted': is_granted,
+            'status': record.status,
+            'updated_at': timezone.now().strftime('%Y-%m-%d %H:%M'),
+        })
+    except ValueError as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error('Consent toggle error: %s', e)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def privacy_nomination_save(request):
+    """
+    DPDP Section 14 Data Principal Nomination save endpoint.
+    """
+    try:
+        data = json.loads(request.body) if request.content_type and 'application/json' in request.content_type else request.POST
+        nominee_name = data.get('nominee_name', '').strip()
+        nominee_email = data.get('nominee_email', '').strip()
+        nominee_phone = data.get('nominee_phone', '').strip()
+        relationship = data.get('relationship', '').strip()
+        notes = data.get('notes', '').strip()
+
+        nominee = NominationService.set_nominee(
+            user=request.user,
+            nominee_name=nominee_name,
+            nominee_email=nominee_email,
+            relationship=relationship,
+            nominee_phone=nominee_phone,
+            notes=notes,
+            request=request
+        )
+
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or (request.content_type and 'application/json' in request.content_type)
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'message': f'Nominee "{nominee.nominee_name}" registered successfully under DPDP Act Section 14.',
+                'nominee': {
+                    'name': nominee.nominee_name,
+                    'email': nominee.nominee_email,
+                    'relationship': nominee.relationship,
+                    'phone': nominee.nominee_phone,
+                }
+            })
+        messages.success(request, f'Nominee "{nominee.nominee_name}" registered successfully.')
+        return redirect(f"{reverse('privacy_center')}?tab=nomination")
+    except ValueError as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        messages.error(request, str(e))
+        return redirect(f"{reverse('privacy_center')}?tab=nomination")
+    except Exception as e:
+        logger.error('Nomination save error: %s', e)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def privacy_nomination_revoke(request):
+    """
+    Revokes the current Data Principal nomination.
+    """
+    NominationService.revoke_nominee(request.user, request=request)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        return JsonResponse({'success': True, 'message': 'Nomination revoked successfully.'})
+    messages.info(request, 'Nomination has been revoked.')
+    return redirect(f"{reverse('privacy_center')}?tab=nomination")
+
+
+def privacy_grievance_submit(request):
+    """
+    DPDP Section 13 Privacy Grievance Submission endpoint.
+    Accessible to authenticated users as well as non-authenticated visitors.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required.'}, status=405)
+
+    try:
+        data = json.loads(request.body) if request.content_type and 'application/json' in request.content_type else request.POST
+        full_name = data.get('full_name', '').strip()
+        email = data.get('email', '').strip()
+        category = data.get('category', 'other')
+        subject = data.get('subject', '').strip()
+        description = data.get('description', '').strip()
+
+        grievance = GrievanceService.create_grievance(
+            full_name=full_name,
+            email=email,
+            category=category,
+            subject=subject,
+            description=description,
+            user=request.user if request.user.is_authenticated else None,
+            request=request
+        )
+
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or (request.content_type and 'application/json' in request.content_type)
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'message': f'Grievance registered. Ticket number: {grievance.ticket_number}. Under DPDP Rules 2025, our Grievance Officer will review this within statutory timelines (≤90 days).',
+                'ticket_number': grievance.ticket_number,
+                'statutory_deadline': grievance.statutory_deadline.strftime('%d %b %Y'),
+            })
+
+        messages.success(request, f'Grievance registered! Ticket: {grievance.ticket_number}. We will resolve this within statutory timelines.')
+        if request.user.is_authenticated:
+            return redirect(f"{reverse('privacy_center')}?tab=grievances")
+        return redirect('privacy_notice')
+    except ValueError as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        messages.error(request, str(e))
+        return redirect(f"{reverse('privacy_center')}?tab=grievances") if request.user.is_authenticated else redirect('privacy_notice')
+    except Exception as e:
+        logger.error('Grievance submission error: %s', e)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def privacy_grievance_track(request):
+    """
+    Allows tracking a privacy grievance by ticket number and email.
+    """
+    ticket_number = request.GET.get('ticket') or request.POST.get('ticket', '')
+    email = request.GET.get('email') or request.POST.get('email', '')
+
+    if not ticket_number:
+        return JsonResponse({'success': False, 'error': 'Ticket number required.'}, status=400)
+
+    grievance = GrievanceService.get_grievance_by_ticket(ticket_number, email=email)
+    if not grievance:
+        return JsonResponse({'success': False, 'error': 'Grievance ticket not found or email mismatch.'}, status=404)
+
+    return JsonResponse({
+        'success': True,
+        'grievance': {
+            'ticket_number': grievance.ticket_number,
+            'category': grievance.get_category_display(),
+            'subject': grievance.subject,
+            'status': grievance.status,
+            'status_display': grievance.get_status_display(),
+            'resolution_notes': grievance.resolution_notes or '',
+            'statutory_deadline': grievance.statutory_deadline.strftime('%d %b %Y'),
+            'created_at': grievance.created_at.strftime('%d %b %Y, %H:%M'),
+            'resolved_at': grievance.resolved_at.strftime('%d %b %Y, %H:%M') if grievance.resolved_at else None,
+        }
+    })
+
+
+@login_required
+@require_POST
+def privacy_account_erase(request):
+    """
+    DPDP Section 12(3) Right to Erasure Execution Endpoint.
+    Requires password verification and confirmation phrase 'ERASE MY DATA'.
+    Permanently erases user account, attachments, sub-users, projects, tasks, and sessions.
+    """
+    from django.contrib.auth import logout as auth_logout
+    confirm_text = request.POST.get('confirm_erase', '').strip()
+    password = request.POST.get('password', '').strip()
+
+    if confirm_text != 'ERASE MY DATA':
+        messages.error(request, 'Confirmation text mismatch. You must type "ERASE MY DATA" exactly to confirm permanent erasure.')
+        return redirect(f"{reverse('privacy_center')}?tab=erasure")
+
+    if not request.user.check_password(password):
+        messages.error(request, 'Incorrect password. Account erasure request aborted for security.')
+        return redirect(f"{reverse('privacy_center')}?tab=erasure")
+
+    user_to_erase = request.user
+    auth_logout(request)
+    DataPrincipalRightsService.execute_account_erasure(user_to_erase, request=request)
+
+    messages.info(request, 'Your TaskFarmm account and all associated personal data have been permanently erased under DPDP Act 2023 Section 12(3).')
+    return redirect('login')
+

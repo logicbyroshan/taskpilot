@@ -286,6 +286,39 @@
         </div>
     </article>
 
+    <!-- DPDP Act 2023 & DPDP Rules 2025 Privacy & Data Governance Card -->
+    <article class="settings-card" style="border-color: rgba(59, 130, 246, 0.4);">
+        <header class="settings-card-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <h3><i class="fas fa-user-shield" style="color: #60a5fa;"></i> Privacy & Data Governance</h3>
+            <span style="font-size: 0.7rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 8px; border-radius: 999px; font-weight: 700;">DPDP Act 2023</span>
+        </header>
+        <div class="settings-card-body">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5;">
+                Manage your personal data dossier, purpose-specific consents, nominee designations, and grievance redressal under Indian data protection law.
+            </p>
+
+            <div class="setting-item">
+                <div>
+                    <strong>Personal Data Dossier (Section 11)</strong>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Download full machine-readable personal data record</p>
+                </div>
+                <a href="{% url 'privacy_dossier_download' %}" class="pc-btn" style="padding: 6px 14px; font-size: 0.8rem;">
+                    <i class="fas fa-download"></i> Download Dossier
+                </a>
+            </div>
+
+            <div class="setting-item" style="margin-top: 12px;">
+                <div>
+                    <strong>Privacy & Data Rights Center</strong>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">Manage consent withdrawal, nomination, and grievances</p>
+                </div>
+                <a href="{% url 'privacy_center' %}" class="pc-btn pc-btn-secondary" style="padding: 6px 14px; font-size: 0.8rem;">
+                    <i class="fas fa-sliders-h"></i> Open Privacy Center
+                </a>
+            </div>
+        </div>
+    </article>
+
     <!-- Danger Zone Card -->
     <article class="settings-card danger-zone">
         <header class="settings-card-header">
