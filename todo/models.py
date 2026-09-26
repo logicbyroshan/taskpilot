@@ -365,3 +365,225 @@ from django.dispatch import receiver
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.get_or_create(user=instance)
+
+
+# ============================================================
+#  DPDP ACT, 2023 & DPDP RULES, 2025 DATA GOVERNANCE MODELS
+# ============================================================
+
+class ConsentRecord(models.Model):
+    """
+    DPDP Section 6 & Rules compliant Consent Record.
+    Captures verifiable proof of consent with granular purpose separation,
+    versioned notice tracking, timestamps, and auditable status.
+    """
+    class Purpose(models.TextChoices):
+        ESSENTIAL_SERVICE = 'essential_service', 'Account & Core Task Management'
+        EMAIL_NOTIFICATIONS = 'email_notifications', 'Task Reminders, Comments & Alert Emails'
+        AI_ASSISTANT = 'ai_assistant', 'AI Task Breakdown & Roadmap Planning'
+        PRODUCT_UPDATES = 'product_updates', 'Platform Announcements & Feature Updates'
+
+    class Status(models.TextChoices):
+        GRANTED = 'granted', 'Consent Granted'
+        WITHDRAWN = 'withdrawn', 'Consent Withdrawn'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dpdp_consents', db_index=True)
+    purpose = models.CharField(max_length=40, choices=Purpose.choices, db_index=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.GRANTED, db_index=True)
+    notice_version = models.CharField(max_length=30, default='1.0-2025-DPDP')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+    channel = models.CharField(max_length=50, default='web_app')
+    granted_at = models.DateTimeField(default=timezone.now, db_index=True)
+    withdrawn_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-granted_at']
+        indexes = [
+            models.Index(fields=['user', 'purpose', 'status']),
+            models.Index(fields=['user', '-granted_at']),
+        ]
+
+    def __str__(self):
+        return f"Consent({self.user.username}, {self.purpose}, {self.status}, v{self.notice_version})"
+
+    def withdraw(self):
+        """Marks consent as withdrawn and updates timestamp."""
+        self.status = self.Status.WITHDRAWN
+        self.withdrawn_at = timezone.now()
+        self.save(update_fields=['status', 'withdrawn_at', 'updated_at'])
+
+
+class DataPrincipalNomination(models.Model):
+    """
+    DPDP Section 14 compliant Data Principal Nomination.
+    Allows a Data Principal to designate a representative/nominee who can exercise
+    data principal rights in case of death or incapacity.
+    """
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        REVOKED = 'revoked', 'Revoked'
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='nomination')
+    nominee_name = models.CharField(max_length=150)
+    nominee_email = models.EmailField()
+    nominee_phone = models.CharField(max_length=25, blank=True)
+    relationship = models.CharField(max_length=60)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Nomination: {self.user.username} -> {self.nominee_name} ({self.relationship})"
+
+
+class PrivacyGrievance(models.Model):
+    """
+    DPDP Section 13 & DPDP Rules 2025 Grievance Redressal Model.
+    Tracks user grievances with statutory 90-day SLA deadline enforcement.
+    """
+    class Category(models.TextChoices):
+        ACCESS = 'access', 'Access to Personal Data (Section 11)'
+        CORRECTION = 'correction', 'Correction / Updation of Personal Data (Section 12)'
+        ERASURE = 'erasure', 'Erasure / Account Deletion (Section 12(3))'
+        CONSENT = 'consent', 'Consent / Withdrawal Issue (Section 6)'
+        SECURITY = 'security', 'Security / Data Protection Concern (Section 8)'
+        OTHER = 'other', 'General Data Protection Grievance'
+
+    class Status(models.TextChoices):
+        SUBMITTED = 'submitted', 'Submitted / Awaiting Review'
+        IN_REVIEW = 'in_review', 'Under Investigation'
+        RESOLVED = 'resolved', 'Resolved'
+        REJECTED = 'rejected', 'Rejected / Ineligible'
+
+    ticket_number = models.CharField(max_length=36, unique=True, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='privacy_grievances')
+    full_name = models.CharField(max_length=150)
+    email = models.EmailField()
+    category = models.CharField(max_length=30, choices=Category.choices, default=Category.OTHER, db_index=True)
+    subject = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.SUBMITTED, db_index=True)
+    resolution_notes = models.TextField(blank=True)
+    statutory_deadline = models.DateField(db_index=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['ticket_number']),
+            models.Index(fields=['status', 'statutory_deadline']),
+            models.Index(fields=['user', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"Grievance [{self.ticket_number}] {self.subject} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        if not self.ticket_number:
+            import random
+            today_str = timezone.now().strftime('%Y%m%d')
+            rand_suffix = ''.join(random.choices('0123456789ABCDEF', k=6))
+            self.ticket_number = f"GRV-{today_str}-{rand_suffix}"
+        if not self.statutory_deadline:
+            # DPDP Rules 2025 statutory deadline: max 90 days from receipt
+            self.statutory_deadline = (timezone.now() + timezone.timedelta(days=90)).date()
+        super().save(*args, **kwargs)
+
+    @property
+    def days_until_deadline(self):
+        if not self.statutory_deadline:
+            return 90
+        today = timezone.now().date()
+        delta = (self.statutory_deadline - today).days
+        return max(0, delta)
+
+    @property
+    def is_overdue(self):
+        if not self.statutory_deadline or self.status in (self.Status.RESOLVED, self.Status.REJECTED):
+            return False
+        return timezone.now().date() > self.statutory_deadline
+
+
+class DataBreachIncident(models.Model):
+    """
+    DPDP Section 8(6) & DPDP Rules 2025 Personal Data Breach Incident Model.
+    Tracks detection, scope, containment, Board notification, and Principal communications.
+    """
+    class Severity(models.TextChoices):
+        LOW = 'low', 'Low Risk'
+        MEDIUM = 'medium', 'Medium Risk'
+        HIGH = 'high', 'High Risk'
+        CRITICAL = 'critical', 'Critical Risk'
+
+    class Status(models.TextChoices):
+        DETECTED = 'detected', 'Detected'
+        INVESTIGATING = 'investigating', 'Investigating'
+        CONTAINED = 'contained', 'Contained'
+        RESOLVED = 'resolved', 'Resolved'
+
+    incident_id = models.CharField(max_length=36, unique=True, db_index=True)
+    title = models.CharField(max_length=200)
+    nature_and_scope = models.TextField()
+    affected_data_categories = models.TextField()
+    estimated_affected_principals = models.PositiveIntegerField(default=0)
+    severity = models.CharField(max_length=20, choices=Severity.choices, default=Severity.MEDIUM)
+    containment_actions = models.TextField(blank=True)
+    remediation_steps = models.TextField(blank=True)
+    
+    board_notified = models.BooleanField(default=False)
+    board_notification_date = models.DateTimeField(null=True, blank=True)
+    board_reference_id = models.CharField(max_length=100, blank=True)
+    
+    principals_notified = models.BooleanField(default=False)
+    principals_notification_date = models.DateTimeField(null=True, blank=True)
+    
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DETECTED)
+    occurred_at = models.DateTimeField(default=timezone.now)
+    discovered_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-discovered_at']
+
+    def __str__(self):
+        return f"Incident [{self.incident_id}] {self.title} ({self.severity}, {self.status})"
+
+    def save(self, *args, **kwargs):
+        if not self.incident_id:
+            import random
+            today_str = timezone.now().strftime('%Y%m%d')
+            rand_suffix = ''.join(random.choices('0123456789ABCDEF', k=6))
+            self.incident_id = f"INC-{today_str}-{rand_suffix}"
+        super().save(*args, **kwargs)
+
+
+class PrivacyAuditLog(models.Model):
+    """
+    Immutable, privacy-preserving audit log for DPDP regulatory compliance events.
+    Captures privacy actions without storing unnecessary personal data.
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='privacy_audit_logs')
+    user_identifier = models.CharField(max_length=150, blank=True, help_text="Pseudonymized user reference if user deleted")
+    action = models.CharField(max_length=60, db_index=True)
+    resource = models.CharField(max_length=100, blank=True)
+    details = models.JSONField(default=dict, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['action', '-timestamp']),
+            models.Index(fields=['user', '-timestamp']),
+        ]
+
+    def __str__(self):
+        actor = self.user.username if self.user else (self.user_identifier or 'System')
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M')}] {actor}: {self.action}"

@@ -1,4 +1,4 @@
-# todo/context_processors.py
+from django.conf import settings
 from .forms import TaskForm
 from .models import Notification
 
@@ -26,5 +26,6 @@ def add_task_form_to_context(request):
             'unread_notifications_count': unread_count,
             'latest_notifications': latest_notifications,
             'categories': categories,
+            'dpdp_config': getattr(settings, 'DPDP_CONFIG', {}),
         }
-    return {}
+    return {'dpdp_config': getattr(settings, 'DPDP_CONFIG', {})}

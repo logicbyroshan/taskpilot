@@ -44,10 +44,15 @@ csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '').strip()
 if csrf_origins_env:
     CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(',') if o.strip()]
 
-# Production security headers (enabled when DEBUG=False)
+# Production security headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
@@ -341,3 +346,25 @@ LOGOUT_REDIRECT_URL = 'login'
 
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
+
+# ============================================================
+#  DPDP ACT, 2023 & DPDP RULES, 2025 CONFIGURATION LAYER
+# ============================================================
+
+DPDP_CONFIG = {
+    'DATA_FIDUCIARY_NAME': os.environ.get('DPDP_DATA_FIDUCIARY_NAME', 'TaskFarmm Technologies'),
+    'DATA_FIDUCIARY_EMAIL': os.environ.get('DPDP_DATA_FIDUCIARY_EMAIL', 'contact@taskfarmm.com'),
+    'DATA_FIDUCIARY_ADDRESS': os.environ.get('DPDP_DATA_FIDUCIARY_ADDRESS', 'TaskFarmm Tech Park, Sector 62, Noida, Uttar Pradesh 201309, India'),
+    'NOTICE_VERSION': os.environ.get('DPDP_NOTICE_VERSION', '1.0-2025-DPDP'),
+    'NOTICE_EFFECTIVE_DATE': os.environ.get('DPDP_NOTICE_EFFECTIVE_DATE', '2025-01-01'),
+    'GRIEVANCE_OFFICER_NAME': os.environ.get('DPDP_GRIEVANCE_OFFICER_NAME', 'Roshan Damor (Data Protection & Grievance Officer)'),
+    'GRIEVANCE_OFFICER_EMAIL': os.environ.get('DPDP_GRIEVANCE_OFFICER_EMAIL', 'privacy@taskfarmm.com'),
+    'GRIEVANCE_OFFICER_PHONE': os.environ.get('DPDP_GRIEVANCE_OFFICER_PHONE', '+91-11-4000-8000'),
+    'GRIEVANCE_OFFICER_ADDRESS': os.environ.get('DPDP_GRIEVANCE_OFFICER_ADDRESS', 'TaskFarmm Grievance Redressal Cell, Sector 62, Noida, UP 201309, India'),
+    'STATUTORY_GRIEVANCE_DAYS': int(os.environ.get('DPDP_STATUTORY_GRIEVANCE_DAYS', 90)),
+    'RETENTION_NOTIFICATIONS_DAYS': int(os.environ.get('DPDP_RETENTION_NOTIFICATIONS_DAYS', 90)),
+    'RETENTION_EXPIRED_SESSIONS_DAYS': int(os.environ.get('DPDP_RETENTION_EXPIRED_SESSIONS_DAYS', 30)),
+    'RETENTION_AUDIT_LOGS_DAYS': int(os.environ.get('DPDP_RETENTION_AUDIT_LOGS_DAYS', 365)),
+    'CHILD_DATA_COLLECTION_ENABLED': False,
+    'BOARD_ESCALATION_URL': 'https://www.meity.gov.in/dpdp',
+}
